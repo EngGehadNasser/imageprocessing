@@ -136,6 +136,8 @@ function radiobutton6_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in pushbutton2.
 function pushbutton2_Callback(hObject, eventdata, handles)
+
+%**********************************Histogram Equalization******************
  a=getappdata(0,'a');
  Input_image=a;  
  Gray_Image = RGBtoGray_Luminance(Input_image);
@@ -257,6 +259,8 @@ end
 
 % --- Executes on button press in pushbutton1.
 function pushbutton1_Callback(hObject, eventdata, handles)  
+
+%********************************Contrast Image*********************
             New_Min=get(handles.NewMin,'string');
             New_Min=str2num(New_Min);
 
@@ -340,6 +344,7 @@ end
 
 % --- Executes on selection change in menu.
 function menu_Callback(hObject, eventdata, handles)
+%****************************************Graysecal********************
 val=get(handles.menu,'value');
 str=get(handles.menu,'string');
 
@@ -428,8 +433,10 @@ function radiobutton22_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in radiobutton23.
 function radiobutton23_Callback(hObject, eventdata, handles)
-
+%************************************Resize*************************************
 if (get(hObject,'value')==get(hObject,'Max'))
+    % Direct Mapping 0-Order
+    %=======================
     fact_row=get(handles.width,'string');
     fact_row=str2num(fact_row);
     fact_column=get(handles.height,'string');
@@ -499,6 +506,8 @@ end
 
 % --- Executes on button press in pushbutton30.
 function pushbutton30_Callback(hObject, eventdata, handles)
+%Quantization
+%=============
 a=getappdata(0,'a'); 
 Old_Image=a;
 
@@ -540,6 +549,8 @@ figure,imshow(output),title('Quantization');
 
 % --- Executes on button press in pushbutton31.
 function pushbutton31_Callback(hObject, eventdata, handles)
+% Geometric Mean Filter :-
+%========================
 a=getappdata(0,'a'); 
 image=a;
 
@@ -582,6 +593,8 @@ figure;imshow(filteredImage);title('Filtered Image');
 
 % --- Executes on button press in pushbutton32.
 function pushbutton32_Callback(hObject, eventdata, handles)
+
+%************************************** Mid-Point filter *****************************
 a=getappdata(0,'a'); 
 image=a;
 
@@ -631,6 +644,7 @@ image = im2double(image);
 
 % --- Executes on button press in pushbutton34.
 function pushbutton34_Callback(hObject, eventdata, handles)
+% ***************************************** Salt and Pepper Noise *********************
 a=getappdata(0,'a'); 
 image=a;
 
@@ -657,6 +671,7 @@ density=str2double(density);
 
 % --- Executes on button press in pushbutton43.
 function pushbutton43_Callback(hObject, eventdata, handles)
+    %************************************************* Histogram Matching********************************
     a=getappdata(0,'a');
     Input_image=a;
     b=getappdata(0,'b');
@@ -795,6 +810,7 @@ end
 
 % --- Executes on button press in pushbutton35.
 function pushbutton35_Callback(hObject, eventdata, handles)
+%************************************************ Power Law **************************************
  a=getappdata(0,'a');
             Input_image=a;
 
@@ -824,6 +840,7 @@ function pushbutton35_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in pushbutton39.
 function pushbutton39_Callback(hObject, eventdata, handles)
+%*********************************************************** Brightness *********************************
  offest=get(handles.Power,'string');
             offest=str2num(offest);
 
@@ -860,6 +877,7 @@ function pushbutton39_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in pushbutton40.
 function pushbutton40_Callback(hObject, eventdata, handles)
+% ***************************************** image Nagative *****************************************
             a=getappdata(0,'a');
             Input_image=a;
 
@@ -923,6 +941,7 @@ function pushbutton41_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in pushbutton42.
 function pushbutton42_Callback(hObject, eventdata, handles)
+%************************************************** Add two images *****************************
 a=getappdata(0,'a');
             Input_image=a;
             b=getappdata(0,'b');
@@ -1018,6 +1037,7 @@ function radiobutton32_Callback(hObject, eventdata, handles)
 
 % --- Executes on button press in pushbutton45.
 function pushbutton45_Callback(hObject, eventdata, handles)
+%******************************************** Gemotric Gaussian *****************************8
 a=getappdata(0,'a');
      image=a;
    
@@ -1064,7 +1084,7 @@ grid off
 
 % --- Executes on button press in pushbutton47.
 function pushbutton47_Callback(hObject, eventdata, handles)
-%****close***
+%************************************************** Exit *********************
 msgbox('thanks for using Image Processing Program')
 pause(1)
 close();
@@ -1073,6 +1093,7 @@ close();
 
 % --- Executes on button press in pushbutton48.
 function pushbutton48_Callback(hObject, eventdata, handles)
+%************************************************** Load Image (1) *********************
 global a;
 a = uigetfile({'*.jpg','*.png'});
 filename=a;
@@ -1095,6 +1116,8 @@ function pushbutton49_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton49 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+%************************************************** Load Image (2) *********************
 global b;
 %b = uigetfile({'.jpg','.png'})
 
@@ -1117,13 +1140,16 @@ function Resize_CreateFcn(hObject, eventdata, handles)
 
 % --- Executes on button press in radiobutton40.
 function radiobutton40_Callback(hObject, eventdata, handles)
+%************************************************** Resize *********************
 fact_row=get(handles.width,'string');
 fact_row=str2num(fact_row);
 fact_column=get(handles.height,'string');
 fact_column=str2num(fact_column);
 a=getappdata(0,'a');
 Input_image=a;
+
 % Direct Mapping 0-order
+%========================
 [r, c, ch]=size(Input_image);
 if get(handles.radiobutton40,'value')==1
     fact=fact_row;
@@ -1199,6 +1225,7 @@ fact_column=str2num(fact_column);
 a=getappdata(0,'a');
 Input_image=a;
 % Direct Mapping 0-order
+%========================
 if get(handles.radiobutton23,'value')==1
 
     [r, c, ch]=size(Input_image);
@@ -1218,7 +1245,9 @@ if get(handles.radiobutton23,'value')==1
      %imshow (New_im);
      %figure,imshow(Input_image),title('Original');
      figure,imshow(New_im),title('Resized (DM_0 order)');
+    
      % Direct Mapping 1-order
+     %========================
  elseif get(handles.radiobutton24,'value')==1
      fact=fact_row;
      [r, c, ch] = size(Input_image);
@@ -1247,6 +1276,8 @@ if get(handles.radiobutton23,'value')==1
      %figure, imshow(Input_image), title('Original');
      figure, imshow(New_image), title('Resized (DM_1_Order)'); % Resized Mapping 0-order
 elseif get(handles.radiobutton22,'value')==1
+%Resized Mapping 0_Order
+%========================
     [r,c,ch]=size(Input_image);
     new_r=r*fact_row;
     new_c=c*fact_column;
@@ -1277,6 +1308,8 @@ elseif get(handles.radiobutton22,'value')==1
     figure,imshow(out),title('Resized 0_Order');
     % Resized Mapping 1-order
 elseif get(handles.radiobutton21,'value')==1
+%Resized Mapping 1_Order
+%========================
     [row, column, ch] = size(Input_image);
     new_row = row * fact_row;
     new_column = column * fact_column;
@@ -1366,7 +1399,7 @@ function pushbutton53_Callback(hObject, eventdata, handles)
 a=getappdata(0,'a');
 Input_Image=a;
 if get(handles.radiobutton1,'value')==1
-   %*** Mean ****
+   %**********************************************************  Mean **************************************
    %action
     if size(Input_Image, 3) > 1
         Input_Image =RGBtoGray_Luminance(Input_Image);
@@ -1388,7 +1421,7 @@ end
 Out_image=uint8(Smoothed_Image);
 figure, imshow(Out_image), title('Smoothed Image with Mean Filter ');
 elseif get(handles.radiobutton2,'value')==1
-%*** Weighted ****
+%********************************************************** Weighted ******************************
 if size(Input_Image, 3) > 1
     Input_Image = RGBtoGray_Luminance(Input_Image);
 end
@@ -1410,7 +1443,7 @@ end
 Smoothed_Image = uint8(Smoothed_Image);
 figure, imshow(Smoothed_Image), title('Smoothed Image with Weighted Filter');
 elseif get(handles.radiobutton3,'value')==1
-%*** Median ****
+%*************************************************** Median *****************************************
  
 if size(Input_Image, 3) > 1
     Input_Image = RGBtoGray_Luminance(Input_Image);
@@ -1433,6 +1466,7 @@ end
 Out_image=uint8(Smoothed_Image);
 figure, imshow(Out_image), title('Smoothed Image with Median Filter ');
 elseif get(handles.radiobutton4,'value')==1
+%****************************************************** Unsharped Image*****************************8888
     a=getappdata(0,'a'); 
     image=a;
     filter_size = 4;
@@ -1454,6 +1488,7 @@ elseif get(handles.radiobutton4,'value')==1
     New_image = Edge_image + image;
     figure;imshow(New_image);title('Unsharped Image');
 elseif get(handles.radiobutton5,'value')==1
+%********************************************************** Edge Image (Second Derivative) *********************
     a=getappdata(0,'a'); 
     image=a;
     if size(image, 3) > 1
@@ -1478,6 +1513,7 @@ elseif get(handles.radiobutton5,'value')==1
     imshow(edgeImage);
     title('Edge Image (Second Derivative)');
 elseif get(handles.radiobutton6,'value')==1
+%************************************************ Sharpened Image***********************************
 a=getappdata(0,'a'); 
 image=a;
 

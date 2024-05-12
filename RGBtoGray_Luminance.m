@@ -7,6 +7,4 @@ Gray_Image =zeros(r,c,'uint8');
     Gray_Image(i,j)=0.3*RGB_Image(i,j,1)+0.59*RGB_Image(i,j,2)+0.11*RGB_Image(i,j,3);
       end
   end
-
-imshow(Gray_Image);
 end

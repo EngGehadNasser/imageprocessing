@@ -815,25 +815,22 @@ function pushbutton35_Callback(hObject, eventdata, handles)
             Input_image=a;
 
             gamma=get(handles.Power,'string');
-            gamma=str2num(gamma);
+            gamma=str2double(gamma);
 
-            Gray_Image = rgb2gray(Input_image);
-            [rows, cols] = size(Gray_Image);
+            [rows, cols,ch] = size(Input_image);
+            if(ch>1)
+                Gray_Image = RGBtoGray_Luminance(Input_image);
+            end
             Output_Image = zeros(rows, cols);
             for i = 1:rows
                 for j = 1:cols
                     Old_Value = Gray_Image(i, j);
                     New_Value = double(Old_Value) ^ gamma;
-                    New_Value = New_Value / (255 ^ gamma) * 255;
+                    New_Value = New_Value / (255 ^ gamma) * 255; %New_Value is normalized by dividing it by (255 ^ gamma) and then multiplied by 255 to scale it to the range 0-255
                     Output_Image(i, j) = New_Value;
                 end
             end
-            Output_Image = uint8(Output_Image);
-            %Output_Image = Contrast(Output_Image,0,255);
-
-            %axes(handles.axes1);
-            %imshow (Output_Image);
-   % figure, imshow(Input_image), title('Original');
+    Output_Image = uint8(Output_Image);
     figure, imshow(Output_Image), title('Power Law');
 
 

@@ -811,7 +811,7 @@ end
 % --- Executes on button press in pushbutton35.
 function pushbutton35_Callback(hObject, eventdata, handles)
 %************************************************ Power Law **************************************
- a=getappdata(0,'a');
+            a=getappdata(0,'a');
             Input_image=a;
 
             gamma=get(handles.Power,'string');
@@ -904,37 +904,25 @@ function pushbutton41_Callback(hObject, eventdata, handles)
             Input_image=a;
             b=getappdata(0,'b');
             Input_image2=b;
-
-            [rows1,cols1,chs1] = size(Input_image);    
-            [rows2,cols2,chs2] = size(Input_image2);   
-            
-            if chs1<chs2
-                chs = chs1;
-            else
-                chs = chs2;
-            end
-            
-            if rows1 <= rows2 && cols1<=cols2
-                rows = rows1;
-                cols = cols1;
-            else
-                rows = rows2;
-                cols = cols2;
-            end
-            
-            New_image = zeros(rows,cols,chs);
-            for ch=1:chs    
-                for row=1:rows   
-                    for col=1:cols  
+            [rows1,cols1,chs1] = size(Input_image);  
+            [rows2,cols2,chs2] = size(Input_image2);
+            image = imresize(Input_image2, [rows1, cols1]);
+            Input_image2=image;
+            New_image = zeros(rows1,cols1,chs1);
+            for ch=1:chs1     
+                for row=1:rows1   
+                    for col=1:cols1                
                         Value = abs(Input_image(row,col,ch)- Input_image2(row,col,ch));
-                        New_image(row,col,ch) = Value;
-                    end
+                        if Value > 255
+                            New_image(row,col,ch) = 255;
+                        else
+                            New_image(row,col,ch) = Value;
+                        end
+                    end 
                 end
             end
             
             New_Image = uint8(New_image);
-            %axes(handles.axes1);
-            %imshow (New_Image);
              figure, imshow(New_Image), title('subtract two images');
 
 
@@ -949,22 +937,12 @@ a=getappdata(0,'a');
 
             [rows1,cols1,chs1] = size(Input_image);  
             [rows2,cols2,chs2] = size(Input_image2);
-            if chs1<chs2
-                chs = chs1;
-            else
-                chs = chs2;
-            end
-            if rows1 < rows2 && cols1<cols2
-                rows = rows1;
-                cols = cols1;
-            else
-                rows = rows2;
-                cols = cols2;
-            end
-            New_image = zeros(rows,cols,chs);
-            for ch=1:chs     
-                for row=1:rows   
-                    for col=1:cols                
+            image = imresize(Input_image2, [rows1, cols1]);
+            Input_image2=image;
+            New_image = zeros(rows1,cols1,chs1);
+            for ch=1:chs1     
+                for row=1:rows1   
+                    for col=1:cols1                
                         Value = Input_image(row,col,ch)+Input_image2(row,col,ch);
                         if Value > 255
                             New_image(row,col,ch) = 255;
@@ -976,8 +954,6 @@ a=getappdata(0,'a');
             end
             
             New_Image = uint8(New_image);
-            %axes(handles.axes1);
-            %imshow (New_Image);
          figure, imshow(New_Image), title('Add two images');
 
 
@@ -1353,7 +1329,7 @@ end
 
     [rows, cols] = size(image);
 
-    padded_image = padarray(image, [floor(filter_size/2), floor(filter_size/2)]);
+    padded_image = Padding(image, filter_size);
 
     smoothed_image = zeros(rows, cols, 'like', image);  % Initialize smoothed_image with the same data type as the input image
 
@@ -1380,7 +1356,7 @@ image=a;
 
     [rows, cols] = size(image);
 
-    padded_image = padarray(image, [floor(filter_size/2), floor(filter_size/2)]);
+    padded_image = Padding(image, filter_size);
     smoothed_image = zeros(rows, cols, 'like', image);  % Initialize smoothed_image with the same data type as the input image
 
     for i = 1:rows
@@ -1404,9 +1380,11 @@ if get(handles.radiobutton1,'value')==1
     if size(Input_Image, 3) > 1
         Input_Image =RGBtoGray_Luminance(Input_Image);
     end
+ % INPUT Filter_Size !!!!!!!!!!!!!!!!!!! 
+
 Filter_Size = 3;
 [rows, cols] = size(Input_Image);
-Padded_Image = padarray(Input_Image, [floor(Filter_Size/2), floor(Filter_Size/2)]);
+Padded_Image = Padding(Input_Image,Filter_Size);
 Smoothed_Image = zeros(rows, cols);
 
 for i = 1:rows
@@ -1425,19 +1403,19 @@ elseif get(handles.radiobutton2,'value')==1
 if size(Input_Image, 3) > 1
     Input_Image = RGBtoGray_Luminance(Input_Image);
 end
-
-Filter_Size = 3;
-Weights = [1, 2, 1; 2, 4, 2; 1, 2, 1];
-Weights = Weights / sum(Weights(:));
+% INPUT SIGMA !!!!!!!!!!!!!!!!!!! 
+sigma=2;
+[mask,mask_size] = GuassianFilter(sigma);
+mask = mask / sum(mask(:));
 [rows, cols] = size(Input_Image);
-Padded_Image = padarray(Input_Image, [floor(Filter_Size/2), floor(Filter_Size/2)]);
+Padded_Image = Padding(Input_Image, mask_size);
 Smoothed_Image = zeros(rows, cols, 'like', Input_Image);
 
 for i = 1:rows
     for j = 1:cols
-        Neighborhood = double(Padded_Image(i:i+Filter_Size-1, j:j+Filter_Size-1));
-        Weighted_Sum = sum(Neighborhood .* Weights, 'all');
-        Smoothed_Image(i, j) = Weighted_Sum;
+        Neighborhood = double(Padded_Image(i:i+mask_size-1, j:j+mask_size-1));
+        mask_Sum = sum(Neighborhood .* mask, 'all');
+        Smoothed_Image(i, j) = mask_Sum;
     end
 end
 Smoothed_Image = uint8(Smoothed_Image);
@@ -1448,9 +1426,10 @@ elseif get(handles.radiobutton3,'value')==1
 if size(Input_Image, 3) > 1
     Input_Image = RGBtoGray_Luminance(Input_Image);
 end
+ % INPUT Filter_Size !!!!!!!!!!!!!!!!!!! 
 Filter_Size = 3;
 [rows, cols] = size(Input_Image);
-Padded_Image = padarray(Input_Image, [floor(Filter_Size/2), floor(Filter_Size/2)]);
+Padded_Image =Padding(Input_Image, 3);
 Smoothed_Image = zeros(rows, cols);
 
 for i = 1:rows
@@ -1469,10 +1448,11 @@ elseif get(handles.radiobutton4,'value')==1
 %****************************************************** Unsharped Image*****************************8888
     a=getappdata(0,'a'); 
     image=a;
-    filter_size = 4;
+     % INPUT Filter_Size !!!!!!!!!!!!!!!!!!! 
+    filter_size = 5;
     [rows, cols,~] = size(image);
 
-    padded_image = padarray(image, [floor(filter_size/2), floor(filter_size/2)]);
+    padded_image = Padding(image, filter_size);
 
     smoothed_image = zeros(rows, cols,3, 'like', image);
     for k=1:3
@@ -1508,18 +1488,19 @@ elseif get(handles.radiobutton5,'value')==1
             end 
         end
     end
-    edgeImage = edgeImage / max(abs(edgeImage(:)));
-    figure;
-    imshow(edgeImage);
-    title('Edge Image (Second Derivative)');
+    edgeImage = edgeImage / max(abs(edgeImage(:))); %edgeImage is normalized by dividing it by the maximum absolute value of all elements in edgeImage. This step ensures that the edge image is scaled between 0 and 1.
+    figure;imshow(edgeImage);title('Edge Image (Second Derivative)');
 elseif get(handles.radiobutton6,'value')==1
 %************************************************ Sharpened Image***********************************
 a=getappdata(0,'a'); 
 image=a;
-
+Filter_Size=3;
 weights = [-1, -1, -1; -1, 9, -1; -1, -1, -1];
-    [rows, cols, ~] = size(image);
-    padded_image = padarray(image, [1, 1], 'replicate');
+    [rows, cols, ch] = size(image);
+    if(ch<3)
+        warndlg('Please enter a RGB image')
+    else 
+    padded_image = Padding(image, Filter_Size);
     sharpenedImage = zeros(rows, cols, 3, 'like', image); % Initialize RGB image
     for k=1:3
         for i = 1:rows
@@ -1540,7 +1521,7 @@ weights = [-1, -1, -1; -1, 9, -1; -1, -1, -1];
     figure;
     imshow(sharpenedImage);
     title('Sharpened Image'); 
-
+    end
 end                                         
 
 
@@ -1593,7 +1574,7 @@ if get(handles.radiobutton41,'value')==1
        if(fact_column ~= fact_row)
            warndlg('Please enter an equal height and width')
        else 
-                     [r, c, ch]=size(Input_image);
+                    [r, c, ch]=size(Input_image);
                     fact=fact_row;
                     New_r = r*fact;
                     New_c = c*fact;
@@ -1693,8 +1674,8 @@ end
 Resized_image=uint8(Resized_image);
 figure;
 imshow(Resized_image);
- end
- elseif get(handles.radiobutton43,'value')==1
+end
+elseif get(handles.radiobutton43,'value')==1
 %********RM_0 Order******
                 [r,c,ch]=size(Input_image);
                 new_r=r*fact_row;

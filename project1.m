@@ -715,9 +715,6 @@ function pushbutton43_Callback(hObject, eventdata, handles)
                 end
             end
             newImage = Input_image;
-
-            %axes(handles.axes1);
-            %imshow (newImage);
             figure, imshow(newImage), title('Histogram Matching');
 
 
@@ -752,8 +749,6 @@ function pushbutton44_Callback(hObject, eventdata, handles)
        count = 0; 
    end
    n = 0 : 255; 
-   %axes(handles.axes1);
-   %imshow (Out_image);
    figure
    stem(n, freqArray); 
    grid on; 
@@ -844,32 +839,31 @@ function pushbutton39_Callback(hObject, eventdata, handles)
             a=getappdata(0,'a');
             Input_image=a;
 
-            [rows,cols,chs] = size(Input_image);   
-            new_dark_image = Input_image;          
-            new_light_image = Input_image;          
+            [rows,cols,chs] = size(Input_image);
+           if offest<0
+               s='Darkness';
+           elseif offest>0
+               s='Brightness';
+           else
+               s='Input Image';
+          end
+            new_image = Input_image;          
             for ch=1:chs  
                 for row=1:rows   
                     for col=1:cols    
-                        NewValueDark = Input_image(row,col,ch) - offest;
-                        if NewValueDark<0     
-                            new_dark_image(row,col,ch) = 0;  
+                        NewValue = Input_image(row,col,ch) + offest;   
+                        if NewValue>255
+                            new_image(row,col,ch) = 255;
+                        elseif NewValue<0     
+                            new_image(row,col,ch) = 0;  
                         else
-                            new_dark_image(row,col,ch) = NewValueDark;
-                        end
-                        NewValueLight = Input_image(row,col,ch) + offest;   
-                        if NewValueLight>255
-                            new_light_image(row,col,ch) = 255;
-                        else
-                            new_light_image(row,col,ch) = NewValueLight;
+                            new_image(row,col,ch) = NewValue;
                         end   
                     end
                 end
             end
 
-            %axes(handles.axes1);
-            %imshow (new_light_image);
-
-            figure,imshow(new_light_image),title('Brightness'); 
+            figure,imshow(new_image),title(s); 
 
 
 % --- Executes on button press in pushbutton40.
@@ -878,7 +872,7 @@ function pushbutton40_Callback(hObject, eventdata, handles)
             a=getappdata(0,'a');
             Input_image=a;
 
-            Gray_Image = rgb2gray(Input_image);
+            Gray_Image = RGBtoGray_Luminance(Input_image);
             [rows, cols] = size(Gray_Image);
             Negative_Image = zeros(rows, cols);
             for i = 1:rows
@@ -889,10 +883,7 @@ function pushbutton40_Callback(hObject, eventdata, handles)
                 end
             end
             Negative_Image = uint8(Negative_Image);
-           % axes(handles.axes1);
-            %imshow (Negative_Image);
-   % figure, imshow(Input_Image), title('Original');
-    figure, imshow(Negative_Image), title('image Nagative');
+            figure, imshow(Negative_Image), title('image Nagative');
 
 
 % --- Executes on button press in pushbutton41.

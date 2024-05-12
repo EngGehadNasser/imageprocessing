@@ -22,7 +22,7 @@ function varargout = project1(varargin)
 
 % Edit the above text to modify the response to help project1
 
-% Last Modified by GUIDE v2.5 10-May-2024 22:16:23
+% Last Modified by GUIDE v2.5 12-May-2024 23:25:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -266,7 +266,9 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 
             New_Max=get(handles.NewMax,'string');
             New_Max=str2num(New_Max);
-            
+            if  New_Min<0 || New_Min>255 || New_Max<0 || New_Max>255 
+                 warndlg('Please enter a valid range!')
+            else
             a=getappdata(0,'a');
             Input_image=a;  
 
@@ -289,12 +291,8 @@ function pushbutton1_Callback(hObject, eventdata, handles)
                 end
             end
             Output_Image = uint8(Output_Image);
-
-            %axes(handles.axes1);
-            %imshow (Output_Image);
-    %figure, imshow(Input_image), title('Original');
-    figure, imshow(Output_Image), title('Contrast Image');
-
+            figure, imshow(Output_Image), title('Contrast Image');
+            end
 
 
 function NewMin_Callback(hObject, eventdata, handles)
@@ -553,10 +551,12 @@ function pushbutton31_Callback(hObject, eventdata, handles)
 %========================
 a=getappdata(0,'a'); 
 image=a;
-
-windowSize=get(handles.MeanFilter,'string');
+windowSize=get(handles.windowSize,'string');
 windowSize=str2double(windowSize);
     % Get the size of the image
+    if  mod(windowSize, 2) == 0
+     warndlg('Please enter an odd window size !')
+else
     [rows, cols,ch] = size(image);
      if(ch>1)
          image=RGBtoGray_Luminance(image);
@@ -588,7 +588,7 @@ windowSize=str2double(windowSize);
     end
     % Display the original image
 figure;imshow(filteredImage);title('Filtered Image');
-
+    end
 
 
 % --- Executes on button press in pushbutton32.
@@ -805,13 +805,15 @@ end
 
 % --- Executes on button press in pushbutton35.
 function pushbutton35_Callback(hObject, eventdata, handles)
-%************************************************ Power Law **************************************
+%************************************************ Input Law **************************************
             a=getappdata(0,'a');
             Input_image=a;
 
-            gamma=get(handles.Power,'string');
+            gamma=get(handles.Input,'string');
             gamma=str2double(gamma);
-
+            if  gamma<0
+                  warndlg('Please enter a positive gamma !')
+            else
             [rows, cols,ch] = size(Input_image);
             if(ch>1)
                 Gray_Image = RGBtoGray_Luminance(Input_image);
@@ -827,13 +829,13 @@ function pushbutton35_Callback(hObject, eventdata, handles)
             end
     Output_Image = uint8(Output_Image);
     figure, imshow(Output_Image), title('Power Law');
-
+            end
 
 
 % --- Executes on button press in pushbutton39.
 function pushbutton39_Callback(hObject, eventdata, handles)
 %*********************************************************** Brightness *********************************
- offest=get(handles.Power,'string');
+ offest=get(handles.Input,'string');
             offest=str2num(offest);
 
             a=getappdata(0,'a');
@@ -1306,11 +1308,21 @@ elseif get(handles.radiobutton21,'value')==1
 
 
 % --- Executes on button press in pushbutton51.
-function pushbutton51_Callback(hObject, eventdata, handles)
-filter_size=get(handles.SizeMask,'string');
-filter_size=str2num(filter_size);
+
+% --- Executes on button press in pushbutton50.
+
+
+% --- Executes on button press in pushbutton53.
+function pushbutton53_Callback(hObject, eventdata, handles)
 a=getappdata(0,'a');
+Input_Image=a;
 image=a;
+Filter_Size=get(handles.Size,'string');
+Filter_Size=str2num(Filter_Size);
+filter_size=Filter_Size;
+if  mod(Filter_Size, 2) == 0
+     warndlg('Please enter an Odd filter size !')
+elseif get(handles.radiobutton53,'value')==1
 if size(image, 3) > 1
     image = RGBtoGray_Luminance(image);
 end
@@ -1329,15 +1341,7 @@ end
         end
     end
     figure;imshow(smoothed_image);title('Smoothed Image');
-
-
-% --- Executes on button press in pushbutton50.
-function pushbutton50_Callback(hObject, eventdata, handles)
-filter_size=get(handles.SizeMask,'string');
-filter_size=str2num(filter_size);
-a=getappdata(0,'a');
-image=a;
-
+elseif get(handles.radiobutton54,'value')==1
     if size(image, 3) > 1
         image = RGBtoGray_Luminance(image);
     end
@@ -1356,13 +1360,7 @@ image=a;
         end
     end
     figure;imshow(smoothed_image);title('smoothed image');
-
-
-% --- Executes on button press in pushbutton53.
-function pushbutton53_Callback(hObject, eventdata, handles)
-a=getappdata(0,'a');
-Input_Image=a;
-if get(handles.radiobutton1,'value')==1
+elseif get(handles.radiobutton1,'value')==1
    %**********************************************************  Mean **************************************
    %action
     if size(Input_Image, 3) > 1
@@ -1386,28 +1384,6 @@ end
 
 Out_image=uint8(Smoothed_Image);
 figure, imshow(Out_image), title('Smoothed Image with Mean Filter ');
-elseif get(handles.radiobutton2,'value')==1
-%********************************************************** Weighted ******************************
-if size(Input_Image, 3) > 1
-    Input_Image = RGBtoGray_Luminance(Input_Image);
-end
-% INPUT SIGMA !!!!!!!!!!!!!!!!!!! 
-sigma=2;
-[mask,mask_size] = GuassianFilter(sigma);
-mask = mask / sum(mask(:));
-[rows, cols] = size(Input_Image);
-Padded_Image = Padding(Input_Image, mask_size);
-Smoothed_Image = zeros(rows, cols, 'like', Input_Image);
-
-for i = 1:rows
-    for j = 1:cols
-        Neighborhood = double(Padded_Image(i:i+mask_size-1, j:j+mask_size-1));
-        mask_Sum = sum(Neighborhood .* mask, 'all');
-        Smoothed_Image(i, j) = mask_Sum;
-    end
-end
-Smoothed_Image = uint8(Smoothed_Image);
-figure, imshow(Smoothed_Image), title('Smoothed Image with Weighted Filter');
 elseif get(handles.radiobutton3,'value')==1
 %*************************************************** Median *****************************************
  
@@ -1433,9 +1409,7 @@ end
 Out_image=uint8(Smoothed_Image);
 figure, imshow(Out_image), title('Smoothed Image with Median Filter ');
 elseif get(handles.radiobutton4,'value')==1
-%****************************************************** Unsharped Image*****************************8888
-    a=getappdata(0,'a'); 
-    image=a;
+%****************************************************** Unsharped Image*****************************
      % INPUT Filter_Size !!!!!!!!!!!!!!!!!!! 
     filter_size = 5;
     [rows, cols,~] = size(image);
@@ -1455,61 +1429,7 @@ elseif get(handles.radiobutton4,'value')==1
     Edge_image = image - smoothed_image;
     New_image = Edge_image + image;
     figure;imshow(New_image);title('Unsharped Image');
-elseif get(handles.radiobutton5,'value')==1
-%********************************************************** Edge Image (Second Derivative) *********************
-    a=getappdata(0,'a'); 
-    image=a;
-    if size(image, 3) > 1
-        image=RGBtoGray_Luminance(image);
-    end
 
-    [rows, cols] = size(image);
-    edgeImage = zeros(rows, cols);
-    for i = 2:rows-1
-        for j = 1:cols
-            edgeImage(i, j) = image(i+1,j)+image(i-1,j)-2*image(i,j); 
-            if(i==rows-1)
-                edgeImage(i+1, j) =0;
-            end   
-            if(i==2)
-                edgeImage(i-1, j) =0;
-            end 
-        end
-    end
-    edgeImage = edgeImage / max(abs(edgeImage(:))); %edgeImage is normalized by dividing it by the maximum absolute value of all elements in edgeImage. This step ensures that the edge image is scaled between 0 and 1.
-    figure;imshow(edgeImage);title('Edge Image (Second Derivative)');
-elseif get(handles.radiobutton6,'value')==1
-%************************************************ Sharpened Image***********************************
-a=getappdata(0,'a'); 
-image=a;
-Filter_Size=3;
-weights = [-1, -1, -1; -1, 9, -1; -1, -1, -1];
-    [rows, cols, ch] = size(image);
-    if(ch<3)
-        warndlg('Please enter a RGB image')
-    else 
-    padded_image = Padding(image, Filter_Size);
-    sharpenedImage = zeros(rows, cols, 3, 'like', image); % Initialize RGB image
-    for k=1:3
-        for i = 1:rows
-            for j = 1:cols
-                neighborhood = double(padded_image(i:i+2, j:j+2, k));
-                weighted_sum = sum(neighborhood(:) .* weights(:));
-                if weighted_sum > 255
-                    weighted_sum = 255;
-                elseif weighted_sum < 0
-                    weighted_sum = 0;
-                end
-                sharpenedImage(i, j, k) = weighted_sum;
-            end
-        end
-    end
-    
-    sharpenedImage = uint8(sharpenedImage);
-    figure;
-    imshow(sharpenedImage);
-    title('Sharpened Image'); 
-    end
 end                                         
 
 
@@ -1755,18 +1675,18 @@ end
 
 
 
-function MeanFilter_Callback(hObject, eventdata, handles)
-% hObject    handle to MeanFilter (see GCBO)
+function windowSize_Callback(hObject, eventdata, handles)
+% hObject    handle to windowSize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of MeanFilter as text
-%        str2double(get(hObject,'String')) returns contents of MeanFilter as a double
+% Hints: get(hObject,'String') returns contents of windowSize as text
+%        str2double(get(hObject,'String')) returns contents of windowSize as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function MeanFilter_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MeanFilter (see GCBO)
+function windowSize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to windowSize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1802,13 +1722,15 @@ end
 
 % --- Executes on button press in pushbutton59.
 function pushbutton59_Callback(hObject, eventdata, handles)
-
+%                           Mid Point Filter
 a=getappdata(0,'a'); 
 image=a;
 
-windowSize=get(handles.MidPoint,'string');
+windowSize=get(handles.windowSize,'string');
 windowSize=str2double(windowSize);
-
+if  mod(windowSize, 2) == 0
+     warndlg('Please enter an odd window size !')
+else
 % Convert the image to double precision
 image = im2double(image);                 
 image=RGBtoGray_Luminance(image);
@@ -1841,7 +1763,7 @@ image=RGBtoGray_Luminance(image);
     figure;
     imshow(filteredImage);
     title('Filtered Image');
-
+end
 
 
 % --- Executes on button press in pushbutton60.
@@ -1849,7 +1771,7 @@ function pushbutton60_Callback(hObject, eventdata, handles)
 a=getappdata(0,'a'); 
 oldimage=a;
 
-K=get(handles.input2,'string');
+K=get(handles.Input,'string');
 K=str2double(K);
 
 [row,column,pages]=size(oldimage);
@@ -1922,18 +1844,18 @@ end
 
 
 
-function Power_Callback(hObject, eventdata, handles)
-% hObject    handle to Power (see GCBO)
+function Input_Callback(hObject, eventdata, handles)
+% hObject    handle to Input (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of Power as text
-%        str2double(get(hObject,'String')) returns contents of Power as a double
+% Hints: get(hObject,'String') returns contents of Input as text
+%        str2double(get(hObject,'String')) returns contents of Input as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function Power_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Power (see GCBO)
+function Input_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Input (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1942,3 +1864,140 @@ function Power_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+function Size_Callback(hObject, eventdata, handles)
+% hObject    handle to Size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Size as text
+%        str2double(get(hObject,'String')) returns contents of Size as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function Size_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Size (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in radiobutton57.
+function radiobutton57_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton57 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton57
+
+
+% --- Executes on button press in pushbutton61.
+function pushbutton61_Callback(hObject, eventdata, handles)
+a=getappdata(0,'a');
+Input_Image=a;
+if get(handles.radiobutton2,'value')==1
+%********************************************************** Weighted ******************************
+prompt={'Enter Sigma'};
+dlg_title='input';
+num_lines=1;
+def={'',''};
+answer=inputdlg(prompt,dlg_title,num_lines,def);
+sigma=str2num(answer{1});
+if size(Input_Image, 3) > 1
+    Input_Image = RGBtoGray_Luminance(Input_Image);
+end
+% INPUT SIGMA !!!!!!!!!!!!!!!!!!! 
+[mask,mask_size] = GuassianFilter(sigma);
+mask = mask / sum(mask(:));
+[rows, cols] = size(Input_Image);
+Padded_Image = Padding(Input_Image, mask_size);
+Smoothed_Image = zeros(rows, cols, 'like', Input_Image);
+
+for i = 1:rows
+    for j = 1:cols
+        Neighborhood = double(Padded_Image(i:i+mask_size-1, j:j+mask_size-1));
+        mask_Sum = sum(Neighborhood .* mask, 'all');
+        Smoothed_Image(i, j) = mask_Sum;
+    end
+end
+Smoothed_Image = uint8(Smoothed_Image);
+figure, imshow(Smoothed_Image), title('Smoothed Image with Weighted Filter');
+elseif get(handles.radiobutton6,'value')==1
+%************************************************ Sharpened Image***********************************
+a=getappdata(0,'a'); 
+image=a;
+Filter_Size=3;
+weights = [-1, -1, -1; -1, 9, -1; -1, -1, -1];
+    [rows, cols, ch] = size(image);
+    if(ch<3)
+        warndlg('Please enter a RGB image')
+    else 
+    padded_image = Padding(image, Filter_Size);
+    sharpenedImage = zeros(rows, cols, 3, 'like', image); % Initialize RGB image
+    for k=1:3
+        for i = 1:rows
+            for j = 1:cols
+                neighborhood = double(padded_image(i:i+2, j:j+2, k));
+                weighted_sum = sum(neighborhood(:) .* weights(:));
+                if weighted_sum > 255
+                    weighted_sum = 255;
+                elseif weighted_sum < 0
+                    weighted_sum = 0;
+                end
+                sharpenedImage(i, j, k) = weighted_sum;
+            end
+        end
+    end
+    
+    sharpenedImage = uint8(sharpenedImage);
+    figure;
+    imshow(sharpenedImage);
+    title('Sharpened Image'); 
+    end
+elseif get(handles.radiobutton5,'value')==1
+%********************************************************** Edge Image (Second Derivative) *********************
+    a=getappdata(0,'a'); 
+    image=a;
+    if size(image, 3) > 1
+        image=RGBtoGray_Luminance(image);
+    end
+
+    [rows, cols] = size(image);
+    edgeImage = zeros(rows, cols);
+    for i = 2:rows-1
+        for j = 1:cols
+            edgeImage(i, j) = image(i+1,j)+image(i-1,j)-2*image(i,j); 
+            if(i==rows-1)
+                edgeImage(i+1, j) =0;
+            end   
+            if(i==2)
+                edgeImage(i-1, j) =0;
+            end 
+        end
+    end
+    edgeImage = edgeImage / max(abs(edgeImage(:))); %edgeImage is normalized by dividing it by the maximum absolute value of all elements in edgeImage. This step ensures that the edge image is scaled between 0 and 1.
+    figure;imshow(edgeImage);title('Edge Image (Second Derivative)');
+end
+% --- Executes on button press in radiobutton53.
+function radiobutton53_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton53 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton53
+
+
+% --- Executes on button press in radiobutton54.
+function radiobutton54_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton54 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton54

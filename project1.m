@@ -873,19 +873,7 @@ function pushbutton40_Callback(hObject, eventdata, handles)
 % ***************************************** image Nagative *****************************************
             a=getappdata(0,'a');
             Input_image=a;
-
-            Gray_Image = RGBtoGray_Luminance(Input_image);
-            [rows, cols] = size(Gray_Image);
-            Negative_Image = zeros(rows, cols);
-            for i = 1:rows
-                for j = 1:cols
-                    oldValue = Gray_Image(i, j);
-                    newValue = 255 - oldValue;
-                    Negative_Image(i, j) = newValue;
-                end
-            end
-            Negative_Image = uint8(Negative_Image);
-            figure, imshow(Negative_Image), title('image Nagative');
+            ImageNagative(Input_image);
 
 
 % --- Executes on button press in pushbutton41.
@@ -894,27 +882,8 @@ function pushbutton41_Callback(hObject, eventdata, handles)
             Input_image=a;
             b=getappdata(0,'b');
             Input_image2=b;
-            [rows1,cols1,chs1] = size(Input_image);  
-            [rows2,cols2,chs2] = size(Input_image2);
-            image = imresize(Input_image2, [rows1, cols1]);
-            Input_image2=image;
-            New_image = zeros(rows1,cols1,chs1);
-            for ch=1:chs1     
-                for row=1:rows1   
-                    for col=1:cols1                
-                        Value = abs(Input_image(row,col,ch)- Input_image2(row,col,ch));
-                        if Value > 255
-                            New_image(row,col,ch) = 255;
-                        else
-                            New_image(row,col,ch) = Value;
-                        end
-                    end 
-                end
-            end
-            
-            New_Image = uint8(New_image);
-             figure, imshow(New_Image), title('subtract two images');
-
+            SubtractTwoImages(Input_image,Input_image2);
+           
 
 
 % --- Executes on button press in pushbutton42.
@@ -924,28 +893,7 @@ a=getappdata(0,'a');
             Input_image=a;
             b=getappdata(0,'b');
             Input_image2=b;
-
-            [rows1,cols1,chs1] = size(Input_image);  
-            [rows2,cols2,chs2] = size(Input_image2);
-            image = imresize(Input_image2, [rows1, cols1]);
-            Input_image2=image;
-            New_image = zeros(rows1,cols1,chs1);
-            for ch=1:chs1     
-                for row=1:rows1   
-                    for col=1:cols1                
-                        Value = Input_image(row,col,ch)+Input_image2(row,col,ch);
-                        if Value > 255
-                            New_image(row,col,ch) = 255;
-                        else
-                            New_image(row,col,ch) = Value;
-                        end
-                    end 
-                end
-            end
-            
-            New_Image = uint8(New_image);
-         figure, imshow(New_Image), title('Add two images');
-
+            AddTwoImages(Input_image,Input_image2);
 
 % --- Executes on button press in radiobutton28.
 function radiobutton28_Callback(hObject, eventdata, handles)

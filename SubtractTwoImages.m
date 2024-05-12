@@ -1,22 +1,40 @@
 function SubtractTwoImages(Input_image,Input_image2)
 [rows1,cols1,chs1] = size(Input_image);  
             [rows2,cols2,chs2] = size(Input_image2);
-            image = imresize(Input_image2, [rows1, cols1]);
-            Input_image2=image;
-            New_image = zeros(rows1,cols1,chs1);
-            for ch=1:chs1     
-                for row=1:rows1   
-                    for col=1:cols1                
-                        Value = abs(Input_image(row,col,ch)- Input_image2(row,col,ch));
-                        if Value > 255
-                            New_image(row,col,ch) = 255;
-                        else
-                            New_image(row,col,ch) = Value;
-                        end
+            if chs1<chs2
+                chs = chs1;
+            else
+                chs = chs2;
+            end
+            if rows1 < rows2 
+                rows = rows1;
+        
+            else
+                rows = rows2;
+            end
+                if cols1<cols2
+   
+                cols = cols1;
+            else
+                cols = cols2;
+         
+               end
+            New_image = zeros(rows,cols,chs);
+            for ch=1:chs     
+                for row=1:rows   
+                    for col=1:cols                
+                        Value = abs(Input_image(row,col,ch)-Input_image2(row,col,ch)); 
+                       
+                        New_image(row,col,ch) = Value;
+                      
                     end 
                 end
             end
-            
-            New_Image = uint8(New_image);
-             figure, imshow(New_Image), title('subtract two images');
+            min_val = min(New_image(:));
+            max_val = max(New_image(:));
+
+            % Normalize the image to the range [0, 255]
+           normalized_image = (((New_image) - min_val) * (255 / (max_val - min_val)));
+           normalized_image=uint8(normalized_image);
+           figure, imshow(normalized_image), title('subtract two images');
              end

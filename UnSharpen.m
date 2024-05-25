@@ -1,6 +1,5 @@
-function [New_image] = UnSharpen(image)
-filter_size = 5;
-    [rows, cols,~] = size(image);
+function [New_image] = UnSharpen(image,filter_size)
+ [rows, cols,~] = size(image);
 
     padded_image = Padding(image, filter_size);
 

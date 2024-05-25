@@ -1,10 +1,8 @@
-function [ newimage ] = quantization( oldimage,k )
+function [ newimage ] = quantization( oldimage,K )
 
 [row,column,pages]=size(oldimage);
 newimage=zeros(row,column,pages,'uint8');
-%quantization
-%k=input('Enter aluer of k = ');
-grayLevel=2^k;
+grayLevel=2^K;
 gap=256/grayLevel;
 colors=gap:gap:256;
 for k=1:pages
@@ -23,5 +21,6 @@ for i=1:row
 end 
 end
 figure;imshow(newimage),title('New Image');
+
 
 end

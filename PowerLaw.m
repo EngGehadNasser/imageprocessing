@@ -1,4 +1,7 @@
 function PowerLaw(Input_image,gamma)
+         if  gamma<0
+                  warndlg('Please enter a positive gamma !')
+            else
             [rows, cols,ch] = size(Input_image);
             if(ch>1)
                 Gray_Image = RGBtoGray_Luminance(Input_image);
@@ -14,4 +17,6 @@ function PowerLaw(Input_image,gamma)
             end
     Output_Image = uint8(Output_Image);
     figure, imshow(Output_Image), title('Power Law');
-    end
+         end
+
+end

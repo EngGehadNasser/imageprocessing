@@ -140,31 +140,7 @@ function pushbutton2_Callback(hObject, eventdata, handles)
 %**********************************Histogram Equalization******************
  a=getappdata(0,'a');
  Input_image=a;  
- Gray_Image = RGBtoGray_Luminance(Input_image);
- [rows, cols] = size(Gray_Image);
- histogram = zeros(256, 1);
- for i = 1:rows
-     for j = 1:cols
-           pixelValue = Gray_Image(i, j);
-           histogram(pixelValue + 1) = histogram(pixelValue + 1) + 1;
-     end
- end
- runningSum = cumsum(histogram);
- maxRunningSum = max(runningSum);
- normalizedSum = runningSum / maxRunningSum;
- New_Range = 255; 
- transformedSum = round(normalizedSum * New_Range);
- Output_Image = zeros(rows, cols);
- for i = 1:rows
-    for j = 1:cols
-         pixelValue = Gray_Image(i, j);
-         Output_Image(i, j) = transformedSum(pixelValue + 1);
-    end
- end
-Output_Image = uint8(Output_Image);
-figure, imshow(Output_Image), title('Histogram Equalization');
-
-
+ Histogram_Equalization( Input_image);
 
 function GaussianSize_Callback(hObject, eventdata, handles)
 % hObject    handle to GaussianSize (see GCBO)
@@ -266,33 +242,9 @@ function pushbutton1_Callback(hObject, eventdata, handles)
 
             New_Max=get(handles.NewMax,'string');
             New_Max=str2num(New_Max);
-            if  New_Min<0 || New_Min>255 || New_Max<0 || New_Max>255 
-                 warndlg('Please enter a valid range!')
-            else
             a=getappdata(0,'a');
             Input_image=a;  
-
-            Gray_Image = RGBtoGray_Luminance(Input_image);
-            [rows, cols] = size(Gray_Image);
-            Old_Min = min(Gray_Image(:));
-            Old_Max = max(Gray_Image(:));
-            Output_Image = zeros(rows, cols);
-            for i = 1:rows
-                for j = 1:cols
-                    Old_Value = Gray_Image(i, j);
-                    New_Value = ((Old_Value - Old_Min) / (Old_Max - Old_Min)) * (New_Max - New_Min) + New_Min;
-                    
-                    if New_Value > 255
-                        New_Value = 255;
-                    elseif New_Value < 0
-                        New_Value = 0;
-                    end
-                    Output_Image(i, j) = New_Value;
-                end
-            end
-            Output_Image = uint8(Output_Image);
-            figure, imshow(Output_Image), title('Contrast Image');
-            end
+            Contrast(Input_image,New_Max,New_Min);
 
 
 function NewMin_Callback(hObject, eventdata, handles)
@@ -352,50 +304,32 @@ switch str{val}
         %-------------------------
         a=getappdata(0,'a');
         img=a;
-        gray_image=img(:,:,1);
-        gray_image=uint8(gray_image);
-        gray_image=uint8(gray_image);
-        figure,imshow(gray_image),title('Gray (Single color channel) ');
+        Single_color_channel(img);
     case 'Averaging'
         %Averaging:-
         %---------------
         a=getappdata(0,'a');
         img=a;
-        gray_image=(img(:,:,1)+img(:,:,2)+img(:,:,3))/3;
-        gray_image=uint8(gray_image);
-        figure,imshow(gray_image),title('Gray (Averaging) ');
+        Averaging(img);
     case 'Luminance'
         %Luminance:-
         %--------------
         a=getappdata(0,'a');
         rgb=a;
-        gray=(0.3*rgb(:,:,1))+ (0.59*rgb(:,:,2))+(0.11*rgb(:,:,3));
-        gray = uint8(gray);
-        figure,imshow(gray),title('Gray (Luminance) ');
+        Gray_Image=RGBtoGray_Luminance(rgb);
+        figure,imshow(Gray_Image),title('Gray (Luminance) ')
     case 'Desaturation'
         %Desaturation:-
         %-----------------
         a=getappdata(0,'a');
         img=a;
-        [row,cl,ch]=size(img);
-        for k=1:ch
-            for i=1:row
-                for j=1:cl
-                    gray_image(i,j,k)=(max(img(i,j,:))+min(img(i,j,:)))/2;
-                end
-            end
-        end
-        gray_image=uint8(gray_image);
-        figure,imshow(gray_image),title('Gray (Desaturation) ')
+        Desaturation(img);
     case 'Decomposing'
         %Decomposing:-
         %---------------
         a=getappdata(0,'a');
         img=a;
-        xgray=min(img(:,:,1),img(:,:,2));
-        gray_image=min(xgray,img(:,:,3));
-        gray_image=uint8(gray_image);
-        figure,imshow(gray_image),title('Gray (Decomposing) ') 
+        Decomposing(img);
 
 end
 
@@ -553,42 +487,7 @@ a=getappdata(0,'a');
 image=a;
 windowSize=get(handles.windowSize,'string');
 windowSize=str2double(windowSize);
-    % Get the size of the image
-    if  mod(windowSize, 2) == 0
-     warndlg('Please enter an odd window size !')
-else
-    [rows, cols,ch] = size(image);
-     if(ch>1)
-         image=RGBtoGray_Luminance(image);
-     end   
-     % Convert the image to double precision
-    image = im2double(image);
-
-    % Calculate the padding size
-    padding = floor(windowSize/2);
-
-    % Create a padded image with ones
-    paddedImage = padarray(image, [padding, padding], 1);
-
-    % Initialize the filtered image
-    filteredImage = zeros(rows, cols);
-
-    % Apply the geometric mean filter
-    for i = 1:rows
-        for j = 1:cols
-            % Extract the window of pixels
-            window = paddedImage(i:i+windowSize-1, j:j+windowSize-1);
-
-            % Calculate the geometric mean of the window
-            geometricMean = prod(window(:))^(1/(windowSize^2));
-
-            % Assign the geometric mean value to the filtered image
-            filteredImage(i, j) = geometricMean;
-        end
-    end
-    % Display the original image
-figure;imshow(filteredImage);title('Filtered Image');
-    end
+   geometric_mean_filter(image,windowSize);
 
 
 % --- Executes on button press in pushbutton32.
@@ -650,23 +549,7 @@ image=a;
 
 density=get(handles.density,'string');
 density=str2double(density);
-
-    % Convert the image to double precision
-    image = im2double(image);
-
-    % Generate salt and pepper noise with the given density
-    noise = rand(size(image));
-    noisyImage = image;
-    
-    % Apply salt and pepper noise to the image
-    noisyImage(noise <= density/2) = 0; % Salt noise
-    noisyImage(noise >= 1 - density/2) = 1; % Pepper noise
-
-    % Display the original image
-    figure;
-    imshow(noisyImage);
-    title('Noisy Image');
-
+salt_pepper(image,density);
 
 
 % --- Executes on button press in pushbutton43.
@@ -676,86 +559,14 @@ function pushbutton43_Callback(hObject, eventdata, handles)
     Input_image=a;
     b=getappdata(0,'b');
     Input_image2=b;
-    [rows,cols,channels] = size(Input_image);
-    freq = zeros(256);
-    freq1 = zeros(256);
-    for k=1:channels
-        for x=1:rows
-             for y=1:cols
-                 freq(Input_image(x,y,k)+1) = freq(Input_image(x,y,k)+1) + 1;
-                 freq1(Input_image2(x,y,k)+1) = freq1(Input_image2(x,y,k)+1) + 1;
-             end
-        end
-    end
-    for i=2:256
-       freq(i) = freq(i) + freq(i-1);
-       freq1(i) = freq1(i) + freq1(i-1);
-    end
-    MAX = freq(256);
-    MAX1 = freq1(256);
-    for i=1:256
-        freq(i) = round(double(freq(i) / MAX) * double(256));
-        freq1(i) = round(double(freq1(i) / MAX1) * double(256));
-    end
-    for i=1:256
-        def = 256;
-        for j=1:256
-            if(abs(freq(i) - freq1(j)) < def)
-                def = abs(freq(i) - freq1(j)); 
-                index = j;
-            end
-        end
-        freq(i) = index - 1;
-    end
-            for k=1:channels
-                for x=1:rows
-                    for y=1:cols
-                        Input_image(x,y,k) = freq(Input_image(x,y,k)+1);
-                    end
-                end
-            end
-            newImage = Input_image;
-            figure, imshow(newImage), title('Histogram Matching');
-
+     Histogram_Matching( Input_image,Input_image2);
 
 
 % --- Executes on button press in pushbutton44.
 function pushbutton44_Callback(hObject, eventdata, handles)
   a=getappdata(0,'a');
   Input_image=a;
-  [r,c,channels]=size(Input_image);
-  if (channels==3)
-      Gray_Image =zeros(r,c,'uint8');
-      for i=1:r
-          for j=1:c     
-              Gray_Image(i,j)=0.3*Input_image(i,j,1)+0.59*Input_image(i,j,2)+0.11*Input_image(i,j,3);
-          end
-      end
-      Input_image =Gray_Image;
-  end
-  img=Input_image;
-  [x, y] = size(img);
-  freqArray = 1 : 256;
-  count = 0;  
-  for i = 1 : 256
-      for j = 1 : x  
-           for k = 1 : y 
-                 if img(j, k) == i-1
-                      count = count + 1;
-                 end
-            end
-       end
-       freqArray(i) = count;
-       count = 0; 
-   end
-   n = 0 : 255; 
-   figure
-   stem(n, freqArray); 
-   grid on; 
-   xlabel('Index Of Pixels');   
-   ylabel('Number of pixels for any level'); 
-   title('Drawing the histogram');
-
+ Drawing_histogram( Input_image);
 
 
 function SizeMask_Callback(hObject, eventdata, handles)
@@ -811,26 +622,7 @@ function pushbutton35_Callback(hObject, eventdata, handles)
 
             gamma=get(handles.Input,'string');
             gamma=str2double(gamma);
-            if  gamma<0
-                  warndlg('Please enter a positive gamma !')
-            else
-            [rows, cols,ch] = size(Input_image);
-            if(ch>1)
-                Gray_Image = RGBtoGray_Luminance(Input_image);
-            end
-            Output_Image = zeros(rows, cols);
-            for i = 1:rows
-                for j = 1:cols
-                    Old_Value = Gray_Image(i, j);
-                    New_Value = double(Old_Value) ^ gamma;
-                    New_Value = New_Value / (255 ^ gamma) * 255; %New_Value is normalized by dividing it by (255 ^ gamma) and then multiplied by 255 to scale it to the range 0-255
-                    Output_Image(i, j) = New_Value;
-                end
-            end
-    Output_Image = uint8(Output_Image);
-    figure, imshow(Output_Image), title('Power Law');
-            end
-
+            PowerLaw(Input_image,gamma);
 
 % --- Executes on button press in pushbutton39.
 function pushbutton39_Callback(hObject, eventdata, handles)
@@ -840,33 +632,8 @@ function pushbutton39_Callback(hObject, eventdata, handles)
 
             a=getappdata(0,'a');
             Input_image=a;
-
-            [rows,cols,chs] = size(Input_image);
-           if offest<0
-               s='Darkness';
-           elseif offest>0
-               s='Brightness';
-           else
-               s='Input Image';
-          end
-            new_image = Input_image;          
-            for ch=1:chs  
-                for row=1:rows   
-                    for col=1:cols    
-                        NewValue = Input_image(row,col,ch) + offest;   
-                        if NewValue>255
-                            new_image(row,col,ch) = 255;
-                        elseif NewValue<0     
-                            new_image(row,col,ch) = 0;  
-                        else
-                            new_image(row,col,ch) = NewValue;
-                        end   
-                    end
-                end
-            end
-
-            figure,imshow(new_image),title(s); 
-
+            Brightness(Input_image,offest);
+            
 
 % --- Executes on button press in pushbutton40.
 function pushbutton40_Callback(hObject, eventdata, handles)
@@ -960,24 +727,7 @@ a=getappdata(0,'a');
 
     stddev=get(handles.GaussianSize,'string');
     stddev=str2num(stddev);
-
-
-
-    % Convert the image to double precision
-    image = im2double(image);
-
-    % Generate Gaussian random noise with the given mean and standard deviation
-    noise = mean + stddev * randn(size(image));
-
-    % Add the noise to the image
-    noisyImage = image + noise;
-
-    % Clip the pixel values to the range [0, 1]
-    noisyImage = max(0, min(1, noisyImage));
-
-
-    figure, imshow(noisyImage),title('Noisy Image');
-    
+    AddingRandomNoiseGaussian(image,mean,stddev);
 % --- Executes on button press in pushbutton46.
 function pushbutton46_Callback(hObject, eventdata, handles)
 %*****clear****
@@ -1271,112 +1021,19 @@ filter_size=Filter_Size;
 if  mod(Filter_Size, 2) == 0
      warndlg('Please enter an Odd filter size !')
 elseif get(handles.radiobutton53,'value')==1
-if size(image, 3) > 1
-    image = RGBtoGray_Luminance(image);
-end
-
-    [rows, cols] = size(image);
-
-    padded_image = Padding(image, filter_size);
-
-    smoothed_image = zeros(rows, cols, 'like', image);  % Initialize smoothed_image with the same data type as the input image
-
-    for i = 1:rows
-        for j = 1:cols
-            neighborhood = padded_image(i:i+filter_size-1, j:j+filter_size-1);
-            max_value = max(neighborhood(:));
-            smoothed_image(i, j) = max_value;
-        end
-    end
-    figure;imshow(smoothed_image);title('Smoothed Image');
+ Max_filter( image,filter_size);
 elseif get(handles.radiobutton54,'value')==1
-    if size(image, 3) > 1
-        image = RGBtoGray_Luminance(image);
-    end
-
-    [rows, cols] = size(image);
-
-    padded_image = Padding(image, filter_size);
-    smoothed_image = zeros(rows, cols, 'like', image);  % Initialize smoothed_image with the same data type as the input image
-
-    for i = 1:rows
-        for j = 1:cols
-            neighborhood = padded_image(i:i+filter_size-1, j:j+filter_size-1);
-            neighborhood_vector = reshape(neighborhood, [], 1);
-            min_value = min(neighborhood_vector);
-            smoothed_image(i, j) = min_value;
-        end
-    end
-    figure;imshow(smoothed_image);title('smoothed image');
+   Min_filter( image,filter_size);
 elseif get(handles.radiobutton1,'value')==1
    %**********************************************************  Mean **************************************
    %action
-    if size(Input_Image, 3) > 1
-        Input_Image =RGBtoGray_Luminance(Input_Image);
-    end
- % INPUT Filter_Size !!!!!!!!!!!!!!!!!!! 
-
-Filter_Size = 3;
-[rows, cols] = size(Input_Image);
-Padded_Image = Padding(Input_Image,Filter_Size);
-Smoothed_Image = zeros(rows, cols);
-
-for i = 1:rows
-    for j = 1:cols
-        Neighborhood = Padded_Image(i:i+Filter_Size-1, j:j+Filter_Size-1);
-        sum_value = sum(Neighborhood(:));
-        Mean_Value = sum_value / (Filter_Size^2);
-        Smoothed_Image(i, j) = Mean_Value;
-    end
-end
-
-Out_image=uint8(Smoothed_Image);
-figure, imshow(Out_image), title('Smoothed Image with Mean Filter ');
+   Mean_Filter(Input_Image,Filter_Size);
 elseif get(handles.radiobutton3,'value')==1
 %*************************************************** Median *****************************************
- 
-if size(Input_Image, 3) > 1
-    Input_Image = RGBtoGray_Luminance(Input_Image);
-end
- % INPUT Filter_Size !!!!!!!!!!!!!!!!!!! 
-Filter_Size = 3;
-[rows, cols] = size(Input_Image);
-Padded_Image =Padding(Input_Image, 3);
-Smoothed_Image = zeros(rows, cols);
-
-for i = 1:rows
-    for j = 1:cols
-       
-        Neighborhood = Padded_Image(i:i+Filter_Size-1, j:j+Filter_Size-1);
-        Neighborhood_Vector = reshape(Neighborhood, [], 1);      
-        Median_Value = median(Neighborhood_Vector);
-        Smoothed_Image(i, j) = Median_Value;
-    end
-end
-
-Out_image=uint8(Smoothed_Image);
-figure, imshow(Out_image), title('Smoothed Image with Median Filter ');
+Median_Filter(Input_Image,Filter_Size);
 elseif get(handles.radiobutton4,'value')==1
 %****************************************************** Unsharped Image*****************************
-     % INPUT Filter_Size !!!!!!!!!!!!!!!!!!! 
-    filter_size = 5;
-    [rows, cols,~] = size(image);
-
-    padded_image = Padding(image, filter_size);
-
-    smoothed_image = zeros(rows, cols,3, 'like', image);
-    for k=1:3
-        for i = 1:rows
-            for j = 1:cols
-                neighborhood = padded_image(i:i+filter_size-1, j:j+filter_size-1);
-                mean_value = mean(neighborhood(:));
-                smoothed_image(i, j,k) = mean_value;
-            end
-        end
-    end
-    Edge_image = image - smoothed_image;
-    New_image = Edge_image + image;
-    figure;imshow(New_image);title('Unsharped Image');
+    UnSharpen(image,filter_size);
 
 end                                         
 
@@ -1427,200 +1084,17 @@ fact_column=get(handles.height,'string');
 fact_column=str2num(fact_column);
 if get(handles.radiobutton41,'value')==1
  %********DM_0 Order******
-       if(fact_column ~= fact_row)
-           warndlg('Please enter an equal height and width')
-       else 
-                    [r, c, ch]=size(Input_image);
-                    fact=fact_row;
-                    New_r = r*fact;
-                    New_c = c*fact;
-                    New_im = zeros(New_r,New_c, ch); 
-                    for k=1:ch
-                        for i=1:r
-                            for j=1:c
-                                New_im(i*fact+1-fact:i*fact,j*fact+1-fact:j*fact,k)= Input_image(i,j,k);
-
-                            end
-                        end
-                    end
-                    
-                    New_im = uint8(New_im);
-                    figure,imshow(New_im),title('Resized (DM_0 order)');
-       end      
+       DM_0_Order(Input_image,fact_row,fact_column);
 elseif get(handles.radiobutton42,'value')==1
 %********DM_1 Order******
- if(fact_column ~= fact_row)
-           warndlg('Please enter an equal height and width')
- else 
-   Original_image=Input_image;
-factor=fact_row;
-[rows,cols,channels]=size(Original_image);
-Resized_image=zeros(rows*factor,cols*factor,channels);
-% move over 3 channels
-for k=1:channels
-    x = 1;
-    for i=1:rows
-        y = 1;
-        for j=1:cols
-            Resized_image(x , y , k) = Original_image(i , j , k);
-            y = y + factor;
-        end
-        x = x + factor;
-    end
-end
-for k=1:channels
-    for i=1:rows
-        x = 1 + (i-1)*factor;
-        for j=1:cols
-            c = 1;
-            if(j + 1 > cols)
-                max = Original_image(i,j,k);
-                min = Original_image(i,j,k);
-                y = 1 + (j-1) * factor;
-                d = 1;
-            elseif(Original_image(i,j,k) > Original_image(i,j+1,k))
-                max = Original_image(i,j,k);
-                min = Original_image(i,j+1,k);
-                y = 1 + j * factor;
-                d = -1;
-            else
-                max = Original_image(i,j+1,k);
-                min = Original_image(i,j,k);
-                d = 1;
-                y = 1 + (j-1) * factor;
-            end 
-            while( c <= factor - 1)
-                Resized_image(x,y+d,k) = round((max-min)/factor * c + min);
-                y = y + d;
-                c = c + 1;
-            end
-        end
-    end
-end
-for k=1:channels
-    for i=1:cols * factor
-        for j=1:rows
-            curRow = 1 + (j-1)*factor;
-            nextRow = 1 + j*factor;
-            c = 1;
-            if(j + 1 > rows)
-                max = Resized_image(curRow,i,k);
-                min = Resized_image(curRow,i,k);
-                y = curRow;
-                d = 1;
-            elseif(Resized_image(curRow,i,k) > Resized_image(nextRow,i,k))
-                max = Resized_image(curRow,i,k);
-                min = Resized_image(nextRow,i,k);
-                y = nextRow;
-                d = -1;
-            else
-                max = Resized_image(nextRow,i,k);
-                min = Resized_image(curRow,i,k);
-                d = 1;
-                y = curRow;
-            end
-            while(c <= factor - 1)
-                y = y + d;
-                Resized_image(y,i,k) = round((max-min)/factor * c + min);
-                c = c + 1;
-            end
-        end
-    end
-end
-Resized_image=uint8(Resized_image);
-figure;
-imshow(Resized_image);
-end
+ DM_1_Order(Input_image,fact_row,fact_column);
 elseif get(handles.radiobutton43,'value')==1
 %********RM_0 Order******
-                [r,c,ch]=size(Input_image);
-                new_r=r*fact_row;
-                new_c=c*fact_column;
-                r_ratio=r/new_r;
-                c_ratio=c/new_c;
-                out=zeros(new_r,new_c,ch);
-                for k=1:ch
-                    for new_x=1:new_r
-                        old_x=new_x*r_ratio;
-                        old_x=round(old_x);
-                        if(old_x==0)
-                            old_x=1;
-                        end
-                        for new_y=1:new_c
-                            old_y=new_y*c_ratio;
-                            old_y=round(old_y);
-                            if(old_y==0)
-                                old_y=1;
-                            end
-                            out(new_x,new_y,k)=Input_image(old_x,old_y,k);
-                        end
-                    end
-                end
-                
-                out=uint8(out);
-                
-                figure,imshow(out),title('Resized 0_Order');
-
+RM_0_Order(Input_image,fact_row,fact_column);
 elseif get(handles.radiobutton44,'value')==1
            %********RM_1 Order******
-          Original_image=Input_image;
-          factor1=fact_row;
-          factor2=fact_column;
-          %new_row = row * fact_row;
-          %new_column = column * fact_column;
-                            [rows,cols,channels] = size(Original_image);
-Resized_image = zeros(rows*factor1,cols*factor2,channels);
-% move over 3 channels
-rowRatio = 1/factor1;
-colRatio = 1/factor2;
-
-for k=1:channels
-    for x=1:rows*factor1
-        for y=1:cols*factor2
-            oldX = round(x * rowRatio);
-            oldY = round(y * colRatio);
-            if(oldX < 1)
-                oldX = 1;
-            end
-            if(oldY < 1)
-                oldY = 1;
-            end
-            x1 = floor(oldX);
-            y1 = floor(oldY);
-            if(x1 < 1)
-                x1 = 1;
-            end
-            if(y1 < 1)
-                y1 = 1;
-            end
-            x2 = x1 +1;
-            y2 = y1 +1;
-            if(x2 > rows)
-                x2 = rows;
-            end
-            if(y2 > cols)
-                y2 = cols;
-            end
-            p1 = Original_image(x1,y1,k);
-            p2 = Original_image(x2,y1,k);
-            p3 = Original_image(x1,y2,k);
-            p4 = Original_image(x2,y2,k);
-            xf = oldX - x1;
-            yf = oldY - y1;
-            z1 = p1 * (1-xf) + p2 * xf;
-            z2 = p3 * (1-xf) + p4 * xf;
-            new = z1 * (1-yf) + z2*yf;
-            Resized_image(x,y,k) = floor(new);
-        end
-    end
+         RM_1_Order(Input_image,fact_row,fact_column)
 end
-%Casting image type for show
-Resized_image=uint8(Resized_image);
-figure,imshow(Resized_image),title('Resized Image');
-end
-
-
-
 
 
 function windowSize_Callback(hObject, eventdata, handles)
@@ -1676,43 +1150,7 @@ image=a;
 
 windowSize=get(handles.windowSize,'string');
 windowSize=str2double(windowSize);
-if  mod(windowSize, 2) == 0
-     warndlg('Please enter an odd window size !')
-else
-% Convert the image to double precision
-image = im2double(image);                 
-image=RGBtoGray_Luminance(image);
-    % Get the size of the image
-    [rows, cols] = size(image);
-
-    % Calculate the padding size
-    padding = floor(windowSize/2);
-
-    % Create a padded image with zeros
-    paddedImage = padarray(image, [padding, padding], 0);
-
-    % Initialize the filtered image
-    filteredImage = zeros(rows, cols);
-
-    % Apply the midpoint filter
-    for i = 1:rows
-        for j = 1:cols
-            % Extract the window of pixels
-            window = paddedImage(i:i+windowSize-1, j:j+windowSize-1);
-
-            % Calculate the midpoint value
-            midpoint = (min(window(:)) + max(window(:))) / 2;
-
-            % Assign the midpoint value to the filtered image
-            filteredImage(i, j) = midpoint;
-        end
-    end
-    % Display the original image
-    figure;
-    imshow(filteredImage);
-    title('Filtered Image');
-end
-
+mid_point_filter(image,windowSize);
 
 % --- Executes on button press in pushbutton60.
 function pushbutton60_Callback(hObject, eventdata, handles)
@@ -1722,28 +1160,7 @@ oldimage=a;
 K=get(handles.Input,'string');
 K=str2double(K);
 
-[row,column,pages]=size(oldimage);
-newimage=zeros(row,column,pages,'uint8');
-grayLevel=2^K;
-gap=256/grayLevel;
-colors=gap:gap:256;
-for k=1:pages
-for i=1:row
-      for j=1:column
-          
-       temp=oldimage(i,j,k)/gap;
-       index=floor(temp);
-       
-       if index<1
-          index=1;
-       end
-       
-       newimage(i,j,k)=colors(index);
-      end
-end 
-end
-figure;imshow(newimage),title('New Image');
-
+quantization( oldimage,K );
 
 
 function MidPoint_Callback(hObject, eventdata, handles)
@@ -1858,80 +1275,17 @@ num_lines=1;
 def={'',''};
 answer=inputdlg(prompt,dlg_title,num_lines,def);
 sigma=str2num(answer{1});
-if size(Input_Image, 3) > 1
-    Input_Image = RGBtoGray_Luminance(Input_Image);
-end
-% INPUT SIGMA !!!!!!!!!!!!!!!!!!! 
-[mask,mask_size] = GuassianFilter(sigma);
-mask = mask / sum(mask(:));
-[rows, cols] = size(Input_Image);
-Padded_Image = Padding(Input_Image, mask_size);
-Smoothed_Image = zeros(rows, cols, 'like', Input_Image);
-
-for i = 1:rows
-    for j = 1:cols
-        Neighborhood = double(Padded_Image(i:i+mask_size-1, j:j+mask_size-1));
-        mask_Sum = sum(Neighborhood .* mask, 'all');
-        Smoothed_Image(i, j) = mask_Sum;
-    end
-end
-Smoothed_Image = uint8(Smoothed_Image);
-figure, imshow(Smoothed_Image), title('Smoothed Image with Weighted Filter');
+Weighted_filter(Input_Image,sigma);
 elseif get(handles.radiobutton6,'value')==1
 %************************************************ Sharpened Image***********************************
 a=getappdata(0,'a'); 
 image=a;
-Filter_Size=3;
-weights = [-1, -1, -1; -1, 9, -1; -1, -1, -1];
-    [rows, cols, ch] = size(image);
-    if(ch<3)
-        warndlg('Please enter a RGB image')
-    else 
-    padded_image = Padding(image, Filter_Size);
-    sharpenedImage = zeros(rows, cols, 3, 'like', image); % Initialize RGB image
-    for k=1:3
-        for i = 1:rows
-            for j = 1:cols
-                neighborhood = double(padded_image(i:i+2, j:j+2, k));
-                weighted_sum = sum(neighborhood(:) .* weights(:));
-                if weighted_sum > 255
-                    weighted_sum = 255;
-                elseif weighted_sum < 0
-                    weighted_sum = 0;
-                end
-                sharpenedImage(i, j, k) = weighted_sum;
-            end
-        end
-    end
-    
-    sharpenedImage = uint8(sharpenedImage);
-    figure;
-    imshow(sharpenedImage);
-    title('Sharpened Image'); 
-    end
+Sharpening(image);
 elseif get(handles.radiobutton5,'value')==1
 %********************************************************** Edge Image (Second Derivative) *********************
     a=getappdata(0,'a'); 
     image=a;
-    if size(image, 3) > 1
-        image=RGBtoGray_Luminance(image);
-    end
-
-    [rows, cols] = size(image);
-    edgeImage = zeros(rows, cols);
-    for i = 2:rows-1
-        for j = 1:cols
-            edgeImage(i, j) = image(i+1,j)+image(i-1,j)-2*image(i,j); 
-            if(i==rows-1)
-                edgeImage(i+1, j) =0;
-            end   
-            if(i==2)
-                edgeImage(i-1, j) =0;
-            end 
-        end
-    end
-    edgeImage = edgeImage / max(abs(edgeImage(:))); %edgeImage is normalized by dividing it by the maximum absolute value of all elements in edgeImage. This step ensures that the edge image is scaled between 0 and 1.
-    figure;imshow(edgeImage);title('Edge Image (Second Derivative)');
+    Edge_detection(image);
 end
 % --- Executes on button press in radiobutton53.
 function radiobutton53_Callback(hObject, eventdata, handles)

@@ -2,7 +2,7 @@
 function AddingRandomNoiseGaussian(image,mean,stddev)
     % Convert the image to double precision
     image = im2double(image);
-
+    
     % Generate Gaussian random noise with the given mean and standard deviation
     noise = mean + stddev * randn(size(image));
 

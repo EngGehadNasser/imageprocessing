@@ -25,4 +25,5 @@ function Brightness(Input_image,offest)
 
             figure,imshow(new_image),title(s); 
 
+
 end
